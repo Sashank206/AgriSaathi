@@ -11,6 +11,11 @@ class DiseaseKnowledgeItem(BaseModel):
     preventive_measures: List[str]
     risk_level: str = "Medium"  # Low, Medium, High, Critical
 
+class TopPredictionItem(BaseModel):
+    condition: str
+    confidence_percentage: float
+    is_healthy: bool = False
+
 class DiseasePredictResponse(BaseModel):
     success: bool
     plant_name: Optional[str] = None
@@ -24,6 +29,9 @@ class DiseasePredictResponse(BaseModel):
     case_id: Optional[str] = None
     model_configured: bool = False
     message: str
+    risk_level: Optional[str] = "Medium"
+    top_probabilities: Optional[dict] = None
+    top_predictions: Optional[List[TopPredictionItem]] = []
 
 class DiseaseCaseCreate(BaseModel):
     crop_type: Optional[str] = "Unknown"

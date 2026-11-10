@@ -26,7 +26,8 @@ class Settings(BaseSettings):
     OPENWEATHER_API_KEY: str = ""
     
     # ML paths
-    DISEASE_MODEL_PATH: str = "ml/saved_models/plant_disease_model.h5"
+    DISEASE_MODEL_PATH: str = "ml/saved_models/full_plant_disease_model.keras"
+    CLASS_MAPPING_PATH: str = "ml/disease_detection/class_mapping.json"
     CROP_MODEL_PATH: str = "ml/saved_models/crop_recommendation_model.pkl"
     
     # Storage

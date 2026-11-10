@@ -120,7 +120,7 @@ def test_crop_recommendation_no_npk():
     assert "water_requirement" in top_crop
 
 def test_disease_detection_image_validation_and_status():
-    """Verify leaf image upload, format validation, and honest unconfigured model response."""
+    """Verify leaf image upload, format validation, and active CNN model prediction."""
     login_res = client.post("/api/auth/login", json={
         "email": "testfarmer1@agrisaathi.org",
         "password": "securepassword123"
@@ -146,9 +146,11 @@ def test_disease_detection_image_validation_and_status():
     res_data = res.json()
     assert res_data["success"] is True
     assert res_data["case_id"] is not None
-    # Verifies truthful model status handling (model not configured in Phase 1)
-    assert res_data["model_configured"] is False
-    assert "currently unconfigured in this 40% milestone" in res_data["message"]
+    # Verifies live model status handling (trained CNN model active)
+    assert res_data["model_configured"] is True
+    assert res_data["predicted_disease"] is not None
+    assert res_data["confidence_score"] is not None
+    assert len(res_data["top_predictions"]) > 0
 
 def test_role_based_access_control():
     """Verify that a farmer cannot access administrative operations."""

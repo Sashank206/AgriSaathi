@@ -21,7 +21,7 @@ import LoadingSpinner from '../components/LoadingSpinner';
 export default function DiseaseDetectionPage() {
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
-  const [cropType, setCropType] = useState('Tomato');
+  const [cropType, setCropType] = useState('All / Auto-Detect (Global AI)');
   const [uploadProgress, setUploadProgress] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -33,16 +33,35 @@ export default function DiseaseDetectionPage() {
   const cameraInputRef = useRef(null);
 
   const cropOptions = [
+    'All / Auto-Detect (Global AI)',
     'Tomato',
     'Potato',
-    'Rice',
-    'Wheat',
-    'Cotton',
-    'Corn / Maize',
-    'Grape',
     'Apple',
-    'Other / General Foliage'
+    'Corn (Maize)',
+    'Grape',
+    'Pepper (Bell)',
+    'Orange',
+    'Peach',
+    'Strawberry',
+    'Squash',
+    'Cherry',
+    'Soybean',
+    'Blueberry',
+    'Raspberry'
   ];
+
+  const getRiskBadge = (risk) => {
+    switch (risk?.toLowerCase()) {
+      case 'critical':
+        return <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-red-100 text-red-800 border border-red-200">Severity: Critical</span>;
+      case 'high':
+        return <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-200">Severity: High</span>;
+      case 'medium':
+        return <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-yellow-100 text-yellow-800 border border-yellow-200">Severity: Medium</span>;
+      default:
+        return <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">Severity: Normal</span>;
+    }
+  };
 
   const handleFileChange = (file) => {
     setError('');
@@ -320,28 +339,41 @@ export default function DiseaseDetectionPage() {
           {result && !loading && (
             <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm space-y-6">
               {/* Result Status Header */}
-              <div className="flex items-center justify-between pb-4 border-b border-slate-100">
-                <div className="flex items-center gap-2">
-                  <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow-xs">
-                    <Microscope className="w-5 h-5" />
+              <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-slate-100">
+                <div className="flex items-center gap-3">
+                  <div className="w-11 h-11 rounded-2xl bg-emerald-600 text-white flex items-center justify-center shadow-xs">
+                    <Microscope className="w-6 h-6" />
                   </div>
                   <div>
-                    <div className="text-xs font-bold text-slate-500">Diagnosis Report</div>
-                    <div className="text-base font-bold text-slate-900">{result.plant_name}</div>
+                    <div className="text-xs font-bold uppercase tracking-wider text-slate-400">Pathology Diagnosis</div>
+                    <div className="text-lg font-extrabold text-slate-900">{result.plant_name}</div>
                   </div>
                 </div>
 
-                {/* Model status tag */}
-                {result.model_configured ? (
-                  <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">
-                    Confidence: {result.confidence_score}%
-                  </span>
-                ) : (
-                  <span className="px-3 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 border border-amber-200">
-                    Phase 1 (40% Milestone)
-                  </span>
-                )}
+                <div className="flex items-center gap-2">
+                  {getRiskBadge(result.risk_level)}
+                  {result.model_configured ? (
+                    <span className="px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                      {result.confidence_score}% Confidence
+                    </span>
+                  ) : (
+                    <span className="px-3 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 border border-amber-200">
+                      Phase 1 (40% Milestone)
+                    </span>
+                  )}
+                </div>
               </div>
+
+              {/* Trained Model Active Banner */}
+              {result.model_configured && (
+                <div className="px-3.5 py-2 rounded-xl bg-emerald-50/70 border border-emerald-100 flex items-center justify-between text-xs text-emerald-900">
+                  <span className="flex items-center gap-2 font-semibold">
+                    <Sparkles className="w-4 h-4 text-emerald-600" />
+                    <span>Trained CNN Deep Learning Pipeline (38 Disease Classes across 14 Crop Types)</span>
+                  </span>
+                  <span className="font-bold text-[11px] text-emerald-700 uppercase">Live Model</span>
+                </div>
+              )}
 
               {/* Truthful Model Notice (Part F Rule) */}
               {!result.model_configured && (
@@ -358,28 +390,86 @@ export default function DiseaseDetectionPage() {
 
               {/* If model has predictions or knowledge-base details */}
               {result.predicted_disease ? (
-                <div className="space-y-4">
-                  <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200">
-                    <div className="text-xs font-bold text-emerald-800 uppercase">Identified Pathogen</div>
-                    <div className="text-xl font-extrabold text-emerald-950 mt-1">
-                      {result.predicted_disease}
+                <div className="space-y-5">
+                  {/* Pathogen / Healthy Diagnosis Banner */}
+                  <div className={`p-5 rounded-2xl border ${
+                    result.predicted_disease.toLowerCase().includes('healthy')
+                      ? 'bg-emerald-50 border-emerald-200 text-emerald-950'
+                      : 'bg-red-50/50 border-red-200 text-red-950'
+                  }`}>
+                    <div className="flex items-center justify-between">
+                      <div className="text-xs font-bold uppercase tracking-wider text-slate-600">
+                        {result.predicted_disease.toLowerCase().includes('healthy') ? 'Foliage Condition' : 'Identified Pathogen'}
+                      </div>
+                      <div className="text-xs font-semibold text-slate-500">
+                        Certainty: <span className="font-bold text-slate-900">{result.confidence_score}%</span>
+                      </div>
+                    </div>
+                    <div className="text-xl font-extrabold text-slate-900 mt-1 flex items-center gap-2">
+                      {result.predicted_disease.toLowerCase().includes('healthy') ? (
+                        <CheckCircle2 className="w-6 h-6 text-emerald-600 shrink-0" />
+                      ) : (
+                        <ShieldAlert className="w-6 h-6 text-red-600 shrink-0" />
+                      )}
+                      <span>{result.predicted_disease}</span>
                     </div>
                     {result.disease_description && (
-                      <p className="text-xs text-emerald-900 mt-2 leading-relaxed">
+                      <p className="text-xs text-slate-600 mt-2.5 leading-relaxed">
                         {result.disease_description}
                       </p>
                     )}
                   </div>
 
+                  {/* Diagnostic Probability Distribution Breakdown */}
+                  {result.top_predictions && result.top_predictions.length > 0 && (
+                    <div className="space-y-3 p-4 rounded-2xl bg-slate-50 border border-slate-200/80">
+                      <div className="flex items-center justify-between text-xs font-bold text-slate-800">
+                        <span className="flex items-center gap-1.5">
+                          <Layers className="w-4 h-4 text-emerald-600" />
+                          <span>Candidate Diagnosis Probabilities</span>
+                        </span>
+                        <span className="text-[11px] text-slate-400 font-normal">Confidence Scores</span>
+                      </div>
+                      <div className="space-y-2 pt-1">
+                        {result.top_predictions.map((pred, idx) => (
+                          <div key={idx} className="space-y-1">
+                            <div className="flex justify-between text-xs font-medium">
+                              <span className="flex items-center gap-1.5 truncate max-w-[260px] sm:max-w-xs">
+                                <span className={`w-2 h-2 rounded-full shrink-0 ${
+                                  pred.is_healthy ? 'bg-emerald-500' : idx === 0 ? 'bg-emerald-600' : 'bg-slate-400'
+                                }`} />
+                                <span className={idx === 0 ? 'font-bold text-slate-900' : 'text-slate-600'}>
+                                  {pred.condition}
+                                </span>
+                              </span>
+                              <span className={`font-mono text-xs ${idx === 0 ? 'font-bold text-emerald-700' : 'text-slate-500'}`}>
+                                {pred.confidence_percentage}%
+                              </span>
+                            </div>
+                            <div className="w-full h-2 rounded-full bg-slate-200 overflow-hidden">
+                              <div
+                                className={`h-full rounded-full transition-all duration-500 ${
+                                  pred.is_healthy ? 'bg-emerald-500' : idx === 0 ? 'bg-emerald-600' : 'bg-slate-400'
+                                }`}
+                                style={{ width: `${Math.max(pred.confidence_percentage, 2)}%` }}
+                              />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
                   {/* Symptoms */}
                   {result.visible_symptoms && result.visible_symptoms.length > 0 && (
-                    <div className="space-y-2">
-                      <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700">
-                        Typical Visible Symptoms
+                    <div className="space-y-2.5">
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                        <Leaf className="w-4 h-4 text-emerald-600" />
+                        <span>Characteristic Foliage Symptoms</span>
                       </h4>
                       <div className="space-y-1.5">
                         {result.visible_symptoms.map((sym, idx) => (
-                          <div key={idx} className="flex items-start gap-2 text-xs text-slate-700">
+                          <div key={idx} className="flex items-start gap-2.5 text-xs text-slate-700 bg-slate-50/60 p-2.5 rounded-xl border border-slate-100">
                             <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 mt-1.5 shrink-0" />
                             <span>{sym}</span>
                           </div>
@@ -390,18 +480,19 @@ export default function DiseaseDetectionPage() {
 
                   {/* Treatment recommendations */}
                   {result.treatment_recommendations && result.treatment_recommendations.length > 0 && (
-                    <div className="space-y-2">
-                      <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700">
-                        Recommended Treatments
+                    <div className="space-y-2.5">
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                        <span>Recommended Agronomic Treatments & Bio-controls</span>
                       </h4>
                       <div className="space-y-2">
                         {result.treatment_recommendations.map((t, idx) => (
                           <div
                             key={idx}
-                            className="p-3 rounded-xl bg-slate-50 border border-slate-100 text-xs text-slate-800 flex items-start gap-2"
+                            className="p-3 rounded-xl bg-emerald-50/40 border border-emerald-100 text-xs text-slate-800 flex items-start gap-2.5"
                           >
                             <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                            <span>{t}</span>
+                            <span className="leading-relaxed">{t}</span>
                           </div>
                         ))}
                       </div>
@@ -410,15 +501,16 @@ export default function DiseaseDetectionPage() {
 
                   {/* Preventive measures */}
                   {result.preventive_measures && result.preventive_measures.length > 0 && (
-                    <div className="space-y-2">
-                      <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700">
-                        Preventive Cultural Practices
+                    <div className="space-y-2.5">
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
+                        <Sparkles className="w-4 h-4 text-blue-600" />
+                        <span>Preventive Cultural Practices (Field Hygiene)</span>
                       </h4>
                       <div className="space-y-1.5">
                         {result.preventive_measures.map((p, idx) => (
-                          <div key={idx} className="flex items-start gap-2 text-xs text-slate-700">
+                          <div key={idx} className="flex items-start gap-2.5 text-xs text-slate-700 bg-blue-50/30 p-2.5 rounded-xl border border-blue-100">
                             <span className="w-1.5 h-1.5 rounded-full bg-blue-600 mt-1.5 shrink-0" />
-                            <span>{p}</span>
+                            <span className="leading-relaxed">{p}</span>
                           </div>
                         ))}
                       </div>

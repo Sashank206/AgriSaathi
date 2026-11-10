@@ -80,7 +80,10 @@ async def predict_plant_disease(
         image_url=analysis_result.get("image_url"),
         case_id=case_id,
         model_configured=analysis_result.get("model_configured", False),
-        message=analysis_result.get("message")
+        message=analysis_result.get("message"),
+        risk_level=analysis_result.get("risk_level", "Medium"),
+        top_probabilities=analysis_result.get("top_probabilities"),
+        top_predictions=analysis_result.get("top_predictions", [])
     )
 
 @router.get("/cases", response_model=List[DiseaseCaseResponse])

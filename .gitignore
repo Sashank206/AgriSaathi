@@ -24,6 +24,11 @@ build/
 backend/uploads/disease_images/*
 !backend/uploads/disease_images/.gitkeep
 
+# ML Datasets & large weights
+ml/datasets/*.zip
+ml/datasets/plant_dataset/
+ml/saved_models/*.h5
+
 # IDE & OS
 .vscode/
 .idea/
